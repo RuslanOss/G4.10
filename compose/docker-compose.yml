@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  web:
+    image: ddeityy/g_4_10:djangunicorn
+    command: gunicorn djangodocker.wsgi:application --bind 0.0.0.0:8001
+    volumes:
+      - ./django/:/usr/src/app/
+      - static_volume:/usr/src/app/staticfiles/
+    ports:
+      - "8001:8001"
+    env_file:
+      - ./django/djangodocker/.env
+    depends_on:
+      - db
+  db:
+    image: postgres:13.0-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=django
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=django
+  nginx:
+    image: ddeityy/g_4_10:nginx
+    volumes:
+      - static_volume:/usr/src/app/staticfiles/
+    ports:
+      - 1337:80
+    depends_on:
+      - web
+
+volumes:
+  postgres_data:
+  static_volume:
